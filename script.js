@@ -1338,25 +1338,21 @@ document.getElementById(
            INSERT PLAYLIST
         ========================= */
 
-        const {
-            data,
-            error
-        } = await supabaseClient
-            .from("playlists")
-            .insert([
-                {
-                    name:
-                        name,
-
-                    description:
-                        description,
-
-                    cover:
-                        cover
-                }
-            ])
-            .select()
-            .single();
+              const {
+          data,
+          error
+      } = await supabaseClient
+          .from("playlists")
+          .insert([
+              {
+                  name: name,
+                  description: description,
+                  cover_url: cover,
+                  is_public: true
+              }
+          ])
+          .select()
+          .single();
 
 
         if (error) {
@@ -1794,26 +1790,25 @@ function openPlaylist(id) {
         );
 
 
-    if (playlist.cover) {
+   if (playlist.cover_url) {
 
-        cover.innerHTML = `
+    cover.innerHTML = `
 
-            <img
-                src="${escapeHTML(
-                    playlist.cover
-                )}"
-                alt="Cover"
-            >
+        <img
+            src="${escapeHTML(
+                playlist.cover_url
+            )}"
+            alt="Cover"
+        >
 
-        `;
+    `;
 
-    } else {
+} else {
 
-        cover.innerHTML =
-            "♫";
+    cover.innerHTML =
+        "♫";
 
-    }
-
+}
 
     renderSongs(
         getPlaylistSongs(id),
