@@ -2,13 +2,28 @@ const audio = document.getElementById("audioPlayer");
 
 console.log("Lifmar Musik V2 — Supabase connected");
 
-const SUPABASE_URL = "https://ibsobqdicrjwpqwinsjk.supabase.co";
-const SUPABASE_KEY = "sb_publishable_wnizDCQ62Ec8KOrzswxEYA_RD2bT2H_";
 
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+/* =========================
+   SUPABASE CONFIG
+========================= */
+
+const SUPABASE_URL =
+    "https://ibsobqdicrjwpqwinsjk.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_wnizDCQ62Ec8KOrzswxEYA_RD2bT2H_";
+
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* =========================
+   GLOBAL DATA
+========================= */
 
 let songs = [];
 let playlists = [];
@@ -19,6 +34,7 @@ let currentPlaylist = null;
 let shuffle = false;
 let repeat = false;
 
+
 /* =========================
    LOAD DATA FROM SUPABASE
 ========================= */
@@ -26,79 +42,135 @@ let repeat = false;
 async function loadData() {
 
     try {
-        // Ambil playlists
-        const { data: playlistData, error: playlistError } =
-            await supabaseClient
-                .from("playlists")
-                .select("*")
-                .order("id", { ascending: true });
+
+        /* =========================
+           LOAD PLAYLISTS
+        ========================= */
+
+        const {
+            data: playlistData,
+            error: playlistError
+        } = await supabaseClient
+            .from("playlists")
+            .select("*")
+            .order("id", {
+                ascending: true
+            });
+
 
         if (playlistError) {
+
             console.error(
                 "Gagal mengambil playlists:",
                 playlistError
             );
+
             return;
         }
 
 
-        // Ambil songs
-        const { data: songData, error: songError } =
-            await supabaseClient
-                .from("songs")
-                .select("*")
-                .order("id", { ascending: true });
+        /* =========================
+           LOAD SONGS
+        ========================= */
+
+        const {
+            data: songData,
+            error: songError
+        } = await supabaseClient
+            .from("songs")
+            .select("*")
+            .order("id", {
+                ascending: true
+            });
+
 
         if (songError) {
+
             console.error(
                 "Gagal mengambil songs:",
                 songError
             );
+
             return;
         }
 
-        playlists = playlistData || [];
-        songs = songData || [];
 
-        console.log("Playlists loaded:", playlists);
-        console.log("Songs loaded:", songs);
+        playlists =
+            playlistData || [];
+
+        songs =
+            songData || [];
 
 
-        // Kalau belum ada playlist,
-        // buat My Favorites
+        console.log(
+            "Playlists loaded:",
+            playlists
+        );
+
+        console.log(
+            "Songs loaded:",
+            songs
+        );
+
+
+        /* =========================
+           DEFAULT PLAYLIST
+        ========================= */
+
         if (playlists.length === 0) {
 
-            const { data: newPlaylist, error } =
-                await supabaseClient
-                    .from("playlists")
-                    .insert([
-                        {
-                            name: "My Favorites",
-                            description: "Your favorite songs",
-                            cover: null
-                        }
-                    ])
-                    .select()
-                    .single();
+            const {
+                data: newPlaylist,
+                error
+            } = await supabaseClient
+                .from("playlists")
+                .insert([
+                    {
+                        name: "My Favorites",
+                        description:
+                            "Your favorite songs",
+                        cover: null
+                    }
+                ])
+                .select()
+                .single();
+
+
             if (error) {
+
                 console.error(
                     "Gagal membuat playlist:",
                     error
                 );
+
             } else {
-                playlists.push(newPlaylist);
+
+                playlists.push(
+                    newPlaylist
+                );
+
             }
         }
 
 
+        /* =========================
+           RENDER
+        ========================= */
+
         renderPlaylists();
+
         renderRecentSongs();
 
+        renderFavorites();
+
+
     } catch (error) {
+
         console.error(
             "Supabase error:",
             error
         );
+
     }
 }
 
@@ -109,15 +181,24 @@ async function loadData() {
 
 function formatTime(seconds) {
 
-    if (!seconds || isNaN(seconds)) {
+    if (
+        !seconds ||
+        isNaN(seconds)
+    ) {
+
         return "0:00";
     }
 
-    const minutes = Math.floor(seconds / 60);
 
-    const secs = Math.floor(seconds % 60)
-        .toString()
-        .padStart(2, "0");
+    const minutes =
+        Math.floor(seconds / 60);
+
+
+    const secs =
+        Math.floor(seconds % 60)
+            .toString()
+            .padStart(2, "0");
+
 
     return `${minutes}:${secs}`;
 }
@@ -130,58 +211,110 @@ function formatTime(seconds) {
 function renderPlaylists() {
 
     const list =
-        document.getElementById("playlistList");
+        document.getElementById(
+            "playlistList"
+        );
 
     const cards =
-        document.getElementById("playlistCards");
+        document.getElementById(
+            "playlistCards"
+        );
+
+
+    if (!list || !cards) return;
+
 
     list.innerHTML = "";
+
     cards.innerHTML = "";
 
+
     playlists.forEach(playlist => {
+
+
+        /* =========================
+           SIDEBAR ITEM
+        ========================= */
 
         const item =
             document.createElement("div");
 
-        item.className = "playlist-item";
 
-        item.textContent = playlist.name;
+        item.className =
+            "playlist-item";
+
+
+        item.textContent =
+            playlist.name;
+
 
         item.onclick = () =>
-            openPlaylist(playlist.id);
+            openPlaylist(
+                playlist.id
+            );
+
 
         list.appendChild(item);
 
 
+        /* =========================
+           PLAYLIST CARD
+        ========================= */
+
         const card =
             document.createElement("div");
 
-        card.className = "playlist-card";
+
+        card.className =
+            "playlist-card";
+
 
         card.onclick = () =>
-            openPlaylist(playlist.id);
+            openPlaylist(
+                playlist.id
+            );
 
-        const cover =
-            playlist.cover
-                ? `<img src="${playlist.cover}">`
-                : "♫";
+
+        let coverHTML = "♫";
+
+
+        if (playlist.cover) {
+
+            coverHTML =
+                `<img src="${escapeHTML(
+                    playlist.cover
+                )}" alt="Cover">`;
+
+        }
+
 
         card.innerHTML = `
 
             <div class="playlist-card-cover">
-                ${cover}
+                ${coverHTML}
             </div>
 
-            <h3>${escapeHTML(playlist.name)}</h3>
+            <h3>
+                ${escapeHTML(
+                    playlist.name
+                )}
+            </h3>
 
             <p>
-                ${getPlaylistSongs(playlist.id).length} songs
+                ${
+                    getPlaylistSongs(
+                        playlist.id
+                    ).length
+                } songs
             </p>
+
         `;
+
 
         cards.appendChild(card);
 
     });
+
 
     updatePlaylistSelect();
 }
@@ -194,19 +327,36 @@ function renderPlaylists() {
 function updatePlaylistSelect() {
 
     const select =
-        document.getElementById("songPlaylist");
+        document.getElementById(
+            "songPlaylist"
+        );
+
+
+    if (!select) return;
+
 
     select.innerHTML = "";
+
 
     playlists.forEach(playlist => {
 
         const option =
-            document.createElement("option");
+            document.createElement(
+                "option"
+            );
 
-        option.value = playlist.id;
-        option.textContent = playlist.name;
 
-        select.appendChild(option);
+        option.value =
+            playlist.id;
+
+
+        option.textContent =
+            playlist.name;
+
+
+        select.appendChild(
+            option
+        );
 
     });
 }
@@ -216,10 +366,14 @@ function updatePlaylistSelect() {
    GET PLAYLIST SONGS
 ========================= */
 
-function getPlaylistSongs(playlistId) {
+function getPlaylistSongs(
+    playlistId
+) {
 
-    return songs.filter(song =>
-        song.playlistId === playlistId
+    return songs.filter(
+        song =>
+            String(song.playlistId) ===
+            String(playlistId)
     );
 }
 
@@ -228,91 +382,185 @@ function getPlaylistSongs(playlistId) {
    SONG RENDER
 ========================= */
 
-function renderSongs(songArray, container) {
+function renderSongs(
+    songArray,
+    container
+) {
+
+    if (!container) return;
+
 
     container.innerHTML = "";
 
-    if (songArray.length === 0) {
+
+    if (
+        !songArray ||
+        songArray.length === 0
+    ) {
 
         container.innerHTML = `
+
             <div style="
                 padding:40px;
                 text-align:center;
                 color:#777;
             ">
+
                 No songs yet.
+
             </div>
+
         `;
 
         return;
     }
 
 
-    songArray.forEach((song, index) => {
+    songArray.forEach(
+        (song, index) => {
 
-        const originalIndex =
-            songs.findIndex(
-                item => item.id === song.id
-            );
 
-        const row =
-            document.createElement("div");
+            const originalIndex =
+                songs.findIndex(
+                    item =>
+                        item.id ===
+                        song.id
+                );
 
-        row.className = "song-row";
 
-        row.innerHTML = `
+            const row =
+                document.createElement(
+                    "div"
+                );
 
-            <span class="song-number">
-                ${index + 1}
-            </span>
 
-            <div class="song-main">
+            row.className =
+                "song-row";
 
-                ${
-                    song.cover
-                    ? `<img class="song-cover" src="${song.cover}">`
-                    : ""
-                }
 
-                <div>
+            row.innerHTML = `
 
-                    <strong>
-                        ${escapeHTML(song.title)}
-                    </strong>
+                <span class="song-number">
+                    ${index + 1}
+                </span>
 
-                    <span>
-                        ${escapeHTML(song.artist)}
-                    </span>
+
+                <div class="song-main">
+
+                    ${
+                        song.cover
+                        ? `
+                            <img
+                                class="song-cover"
+                                src="${escapeHTML(
+                                    song.cover
+                                )}"
+                                alt="Cover"
+                            >
+                        `
+                        : ""
+                    }
+
+
+                    <div>
+
+                        <strong>
+                            ${escapeHTML(
+                                song.title || ""
+                            )}
+                        </strong>
+
+
+                        <span>
+                            ${escapeHTML(
+                                song.artist || ""
+                            )}
+                        </span>
+
+                    </div>
 
                 </div>
 
-            </div>
 
-            <span class="song-time">
-                ${song.duration || ""}
-            </span>
+                <span class="song-time">
 
-            <button
-                class="song-favorite ${
-                    song.favorite ? "active" : ""
-                }"
-                onclick="toggleFavorite('${song.id}')"
-            >
-                ${song.favorite ? "♥" : "♡"}
-            </button>
-        `;
+                    ${
+                        song.duration || ""
+                    }
+
+                </span>
 
 
-        row.addEventListener("dblclick", () => {
+                <button
+                    class="song-favorite ${
+                        song.favorite
+                            ? "active"
+                            : ""
+                    }"
+                    data-song-id="${song.id}"
+                >
 
-            playSong(originalIndex);
+                    ${
+                        song.favorite
+                            ? "♥"
+                            : "♡"
+                    }
 
-        });
+                </button>
+
+            `;
 
 
-        container.appendChild(row);
+            /* =========================
+               PLAY SONG
+            ========================= */
 
-    });
+            row.addEventListener(
+                "click",
+                () => {
+
+                    playSong(
+                        originalIndex
+                    );
+
+                }
+            );
+
+
+            /* =========================
+               FAVORITE BUTTON
+            ========================= */
+
+            const favoriteButton =
+                row.querySelector(
+                    ".song-favorite"
+                );
+
+
+            if (favoriteButton) {
+
+                favoriteButton.addEventListener(
+                    "click",
+                    event => {
+
+                        event.stopPropagation();
+
+                        toggleFavorite(
+                            song.id
+                        );
+
+                    }
+                );
+
+            }
+
+
+            container.appendChild(
+                row
+            );
+
+        }
+    );
 }
 
 
@@ -323,10 +571,19 @@ function renderSongs(songArray, container) {
 function renderRecentSongs() {
 
     const container =
-        document.getElementById("recentSongs");
+        document.getElementById(
+            "recentSongs"
+        );
+
+
+    if (!container) return;
+
 
     renderSongs(
-        songs.slice(-10).reverse(),
+        songs
+            .slice(-10)
+            .reverse(),
+
         container
     );
 }
@@ -339,34 +596,103 @@ function renderRecentSongs() {
 function renderFavorites() {
 
     const container =
-        document.getElementById("favoriteSongs");
+        document.getElementById(
+            "favoriteSongs"
+        );
+
+
+    if (!container) return;
+
 
     renderSongs(
-        songs.filter(song => song.favorite),
+        songs.filter(
+            song => song.favorite
+        ),
+
         container
     );
 }
 
 
-function toggleFavorite(id) {
+/* =========================
+   TOGGLE FAVORITE
+========================= */
+
+async function toggleFavorite(id) {
 
     const song =
-        songs.find(item => item.id === id);
+        songs.find(
+            item =>
+                String(item.id) ===
+                String(id)
+        );
+
 
     if (!song) return;
 
-    song.favorite = !song.favorite;
 
-    saveData();
+    const newFavorite =
+        !Boolean(
+            song.favorite
+        );
+
+
+    const {
+        error
+    } = await supabaseClient
+        .from("songs")
+        .update({
+            favorite:
+                newFavorite
+        })
+        .eq(
+            "id",
+            id
+        );
+
+
+    if (error) {
+
+        console.error(
+            "Gagal update favorite:",
+            error
+        );
+
+        alert(
+            "Gagal mengubah favorite."
+        );
+
+        return;
+    }
+
+
+    song.favorite =
+        newFavorite;
+
 
     renderRecentSongs();
+
     renderFavorites();
 
-    if (currentIndex !== -1 &&
-        songs[currentIndex].id === id) {
+
+    if (
+        currentIndex !== -1 &&
+        songs[currentIndex] &&
+        String(
+            songs[currentIndex].id
+        ) === String(id)
+    ) {
 
         updateFavoriteButton();
+
     }
+
+
+    console.log(
+        "Favorite berhasil diperbarui:",
+        song.title,
+        newFavorite
+    );
 }
 
 
@@ -378,19 +704,54 @@ function playSong(index) {
 
     if (!songs[index]) return;
 
-    currentIndex = index;
 
-    const song = songs[index];
+    currentIndex =
+        index;
 
-    audio.src = song.audio;
 
-    audio.play();
+    const song =
+        songs[index];
 
-    document.getElementById("currentTitle")
-        .textContent = song.title;
 
-    document.getElementById("currentArtist")
-        .textContent = song.artist;
+    if (!song.audio) {
+
+        alert(
+            "File audio lagu ini belum tersedia."
+        );
+
+        return;
+    }
+
+
+    audio.src =
+        song.audio;
+
+
+    audio.load();
+
+
+    audio.play()
+        .catch(error => {
+
+            console.error(
+                "Gagal memutar lagu:",
+                error
+            );
+
+        });
+
+
+    document.getElementById(
+        "currentTitle"
+    ).textContent =
+        song.title || "Unknown";
+
+
+    document.getElementById(
+        "currentArtist"
+    ).textContent =
+        song.artist || "Unknown";
+
 
     updateCurrentCover();
 
@@ -404,56 +765,100 @@ function playSong(index) {
    PLAYER BUTTON
 ========================= */
 
-document.getElementById("playBtn")
-    .addEventListener("click", () => {
+document.getElementById(
+    "playBtn"
+).addEventListener(
+    "click",
+    () => {
 
-        if (currentIndex === -1) {
+
+        if (
+            currentIndex === -1
+        ) {
 
             if (songs.length) {
+
                 playSong(0);
+
             }
 
             return;
         }
 
+
         if (audio.paused) {
-            audio.play();
+
+            audio.play()
+                .catch(error => {
+
+                    console.error(
+                        "Gagal play:",
+                        error
+                    );
+
+                });
+
         } else {
+
             audio.pause();
+
         }
+
 
         updatePlayButton();
 
-    });
+    }
+);
 
+
+/* =========================
+   PLAY BUTTON UPDATE
+========================= */
 
 function updatePlayButton() {
 
-    document.getElementById("playBtn")
-        .textContent =
-        audio.paused ? "▶" : "Ⅱ";
+    const button =
+        document.getElementById(
+            "playBtn"
+        );
+
+
+    if (!button) return;
+
+
+    button.textContent =
+        audio.paused
+            ? "▶"
+            : "Ⅱ";
 }
 
 
 /* =========================
-   NEXT
+   NEXT SONG
 ========================= */
 
-document.getElementById("nextBtn")
-    .addEventListener("click", nextSong);
+document.getElementById(
+    "nextBtn"
+).addEventListener(
+    "click",
+    nextSong
+);
 
 
 function nextSong() {
 
     if (!songs.length) return;
 
+
     let next;
+
 
     if (shuffle) {
 
         next =
             Math.floor(
-                Math.random() * songs.length
+                Math.random() *
+                songs.length
             );
 
     } else {
@@ -461,142 +866,255 @@ function nextSong() {
         next =
             currentIndex + 1;
 
-        if (next >= songs.length) {
+
+        if (
+            next >= songs.length
+        ) {
+
             next = 0;
+
         }
 
     }
+
 
     playSong(next);
 }
 
 
 /* =========================
-   PREVIOUS
+   PREVIOUS SONG
 ========================= */
 
-document.getElementById("previousBtn")
-    .addEventListener("click", () => {
+document.getElementById(
+    "previousBtn"
+).addEventListener(
+    "click",
+    () => {
+
 
         if (!songs.length) return;
+
 
         let previous =
             currentIndex - 1;
 
+
         if (previous < 0) {
-            previous = songs.length - 1;
+
+            previous =
+                songs.length - 1;
+
         }
 
-        playSong(previous);
 
-    });
+        playSong(
+            previous
+        );
+
+    }
+);
 
 
 /* =========================
-   AUDIO END
+   AUDIO ENDED
 ========================= */
 
-audio.addEventListener("ended", () => {
+audio.addEventListener(
+    "ended",
+    () => {
 
-    if (repeat) {
 
-        audio.currentTime = 0;
+        if (repeat) {
 
-        audio.play();
+            audio.currentTime = 0;
 
-    } else {
+            audio.play();
 
-        nextSong();
+        } else {
+
+            nextSong();
+
+        }
 
     }
-
-});
+);
 
 
 /* =========================
    SHUFFLE
 ========================= */
 
-document.getElementById("shuffleBtn")
-    .addEventListener("click", () => {
+document.getElementById(
+    "shuffleBtn"
+).addEventListener(
+    "click",
+    () => {
 
-        shuffle = !shuffle;
 
-        document.getElementById("shuffleBtn")
-            .style.opacity =
-            shuffle ? "1" : ".5";
+        shuffle =
+            !shuffle;
 
-    });
+
+        document.getElementById(
+            "shuffleBtn"
+        ).style.opacity =
+            shuffle
+                ? "1"
+                : ".5";
+
+    }
+);
 
 
 /* =========================
    REPEAT
 ========================= */
 
-document.getElementById("repeatBtn")
-    .addEventListener("click", () => {
+document.getElementById(
+    "repeatBtn"
+).addEventListener(
+    "click",
+    () => {
 
-        repeat = !repeat;
 
-        document.getElementById("repeatBtn")
-            .style.opacity =
-            repeat ? "1" : ".5";
+        repeat =
+            !repeat;
 
-    });
+
+        document.getElementById(
+            "repeatBtn"
+        ).style.opacity =
+            repeat
+                ? "1"
+                : ".5";
+
+    }
+);
 
 
 /* =========================
    PROGRESS
 ========================= */
 
-audio.addEventListener("timeupdate", () => {
-
-    if (!audio.duration) return;
-
-    const progress =
-        (audio.currentTime / audio.duration) * 100;
-
-    document.getElementById("progressBar")
-        .value = progress;
-
-    document.getElementById("currentTime")
-        .textContent =
-        formatTime(audio.currentTime);
-
-});
+audio.addEventListener(
+    "timeupdate",
+    () => {
 
 
-audio.addEventListener("loadedmetadata", () => {
-
-    document.getElementById("duration")
-        .textContent =
-        formatTime(audio.duration);
-
-});
+        if (!audio.duration)
+            return;
 
 
-document.getElementById("progressBar")
-    .addEventListener("input", e => {
+        const progress =
+            (
+                audio.currentTime /
+                audio.duration
+            ) * 100;
 
-        if (!audio.duration) return;
+
+        const progressBar =
+            document.getElementById(
+                "progressBar"
+            );
+
+
+        if (progressBar) {
+
+            progressBar.value =
+                progress;
+
+        }
+
+
+        const currentTime =
+            document.getElementById(
+                "currentTime"
+            );
+
+
+        if (currentTime) {
+
+            currentTime.textContent =
+                formatTime(
+                    audio.currentTime
+                );
+
+        }
+
+    }
+);
+
+
+/* =========================
+   AUDIO METADATA
+========================= */
+
+audio.addEventListener(
+    "loadedmetadata",
+    () => {
+
+
+        const duration =
+            document.getElementById(
+                "duration"
+            );
+
+
+        if (duration) {
+
+            duration.textContent =
+                formatTime(
+                    audio.duration
+                );
+
+        }
+
+    }
+);
+
+
+/* =========================
+   PROGRESS BAR
+========================= */
+
+document.getElementById(
+    "progressBar"
+).addEventListener(
+    "input",
+    event => {
+
+
+        if (!audio.duration)
+            return;
+
 
         audio.currentTime =
-            (e.target.value / 100) *
+            (
+                event.target.value /
+                100
+            ) *
             audio.duration;
 
-    });
+    }
+);
 
 
 /* =========================
    VOLUME
 ========================= */
 
-document.getElementById("volumeBar")
-    .addEventListener("input", e => {
+document.getElementById(
+    "volumeBar"
+).addEventListener(
+    "input",
+    event => {
 
-        audio.volume = e.target.value;
+        audio.volume =
+            event.target.value;
 
-    });
+    }
+);
 
 
 /* =========================
@@ -606,125 +1124,240 @@ document.getElementById("volumeBar")
 function updateCurrentCover() {
 
     const container =
-        document.getElementById("currentCover");
+        document.getElementById(
+            "currentCover"
+        );
 
-    const song = songs[currentIndex];
 
-    if (!song.cover) {
+    if (!container)
+        return;
 
-        container.innerHTML = "♫";
+
+    const song =
+        songs[currentIndex];
+
+
+    if (
+        !song ||
+        !song.cover
+    ) {
+
+        container.innerHTML =
+            "♫";
 
         return;
+
     }
 
-    container.innerHTML =
-        `<img src="${song.cover}">`;
+
+    container.innerHTML = `
+
+        <img
+            src="${escapeHTML(
+                song.cover
+            )}"
+            alt="Cover"
+        >
+
+    `;
 }
 
+
+/* =========================
+   CURRENT FAVORITE
+========================= */
 
 function updateFavoriteButton() {
 
     const button =
-        document.getElementById("favoriteCurrent");
+        document.getElementById(
+            "favoriteCurrent"
+        );
 
-    if (currentIndex === -1) {
 
-        button.textContent = "♡";
+    if (!button) return;
+
+
+    if (
+        currentIndex === -1 ||
+        !songs[currentIndex]
+    ) {
+
+        button.textContent =
+            "♡";
 
         return;
     }
 
+
     button.textContent =
         songs[currentIndex].favorite
-        ? "♥"
-        : "♡";
+            ? "♥"
+            : "♡";
 }
 
 
-document.getElementById("favoriteCurrent")
-    .addEventListener("click", () => {
+/* =========================
+   CURRENT FAVORITE BUTTON
+========================= */
 
-        if (currentIndex === -1) return;
+document.getElementById(
+    "favoriteCurrent"
+).addEventListener(
+    "click",
+    () => {
+
+
+        if (
+            currentIndex === -1
+        )
+            return;
+
 
         toggleFavorite(
             songs[currentIndex].id
         );
 
-    });
+    }
+);
+
+
+/* =========================
+   CREATE PLAYLIST MODAL
+========================= */
+
+function openPlaylistModal() {
+
+    document
+        .getElementById(
+            "playlistModal"
+        )
+        .classList.add("show");
+}
+
+
+document.getElementById(
+    "addPlaylistBtn"
+).addEventListener(
+    "click",
+    openPlaylistModal
+);
+
+
+document.getElementById(
+    "createPlaylistBtn"
+).addEventListener(
+    "click",
+    openPlaylistModal
+);
 
 
 /* =========================
    CREATE PLAYLIST
 ========================= */
 
-function openPlaylistModal() {
+document.getElementById(
+    "playlistForm"
+).addEventListener(
+    "submit",
+    async event => {
 
-    document
-        .getElementById("playlistModal")
-        .classList.add("show");
 
-}
+        event.preventDefault();
 
-document.getElementById("addPlaylistBtn")
-    .addEventListener(
-        "click",
-        openPlaylistModal
-    );
-
-document.getElementById("createPlaylistBtn")
-    .addEventListener(
-        "click",
-        openPlaylistModal
-    );
-
-document.getElementById("playlistForm")
-    .addEventListener("submit", async e => {
-
-        e.preventDefault();
 
         const name =
-            document.getElementById("playlistName")
-                .value
-                .trim();
+            document.getElementById(
+                "playlistName"
+            )
+            .value
+            .trim();
+
 
         const description =
             document.getElementById(
                 "playlistDescriptionInput"
-            ).value.trim();
+            )
+            .value
+            .trim();
+
 
         const coverFile =
             document.getElementById(
                 "playlistCoverInput"
-            ).files[0];
+            )
+            .files[0];
+
 
         if (!name) {
-            alert("Nama playlist wajib diisi.");
+
+            alert(
+                "Nama playlist wajib diisi."
+            );
+
             return;
         }
 
+
         let cover = null;
 
-        // Sementara cover masih diproses nanti
-        // setelah Storage kita hubungkan.
-        if (coverFile) {
 
-            cover =
-                await fileToDataURL(coverFile);
+        /* =========================
+           UPLOAD PLAYLIST COVER
+        ========================= */
 
+        try {
+
+            if (coverFile) {
+
+                cover =
+                    await uploadFile(
+                        coverFile,
+                        "covers",
+                        "playlists"
+                    );
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Gagal upload cover playlist:",
+                error
+            );
+
+            alert(
+                "Gagal upload cover playlist. Cek Console."
+            );
+
+            return;
         }
 
-        const { data, error } =
-            await supabaseClient
-                .from("playlists")
-                .insert([
-                    {
-                        name: name,
-                        description: description,
-                        cover: cover
-                    }
-                ])
-                .select()
-                .single();
+
+        /* =========================
+           INSERT PLAYLIST
+        ========================= */
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("playlists")
+            .insert([
+                {
+                    name:
+                        name,
+
+                    description:
+                        description,
+
+                    cover:
+                        cover
+                }
+            ])
+            .select()
+            .single();
+
 
         if (error) {
 
@@ -740,134 +1373,360 @@ document.getElementById("playlistForm")
             return;
         }
 
-        // Tambahkan hasil dari Supabase
-        playlists.push(data);
 
-        // Render ulang
+        playlists.push(
+            data
+        );
+
+
         renderPlaylists();
 
-        // Tutup modal
-        closeModal("playlistModal");
 
-        // Reset form
-        e.target.reset();
+        closeModal(
+            "playlistModal"
+        );
+
+
+        event.target.reset();
+
 
         console.log(
             "Playlist berhasil dibuat:",
             data
         );
-    });
+
+    }
+);
+
+
+/* =========================
+   ADD SONG MODAL
+========================= */
+
+document.getElementById(
+    "addSongBtn"
+).addEventListener(
+    "click",
+    () => {
+
+
+        updatePlaylistSelect();
+
+
+        document
+            .getElementById(
+                "songModal"
+            )
+            .classList.add("show");
+
+    }
+);
 
 
 /* =========================
    ADD SONG
 ========================= */
 
-document.getElementById("addSongBtn")
-    .addEventListener("click", () => {
-
-        updatePlaylistSelect();
-
-        document
-            .getElementById("songModal")
-            .classList.add("show");
-
-    });
+document.getElementById(
+    "songForm"
+).addEventListener(
+    "submit",
+    async event => {
 
 
-document.getElementById("songForm")
-    .addEventListener("submit", async e => {
+        event.preventDefault();
 
-        e.preventDefault();
 
         const title =
-            document.getElementById("songTitle")
-                .value;
+            document.getElementById(
+                "songTitle"
+            )
+            .value
+            .trim();
+
 
         const artist =
-            document.getElementById("songArtist")
-                .value;
+            document.getElementById(
+                "songArtist"
+            )
+            .value
+            .trim();
+
 
         const coverFile =
-            document.getElementById("songCover")
-                .files[0];
+            document.getElementById(
+                "songCover"
+            )
+            .files[0];
+
 
         const audioFile =
-            document.getElementById("songAudio")
-                .files[0];
+            document.getElementById(
+                "songAudio"
+            )
+            .files[0];
+
 
         const playlistId =
-            document.getElementById("songPlaylist")
-                .value;
+            document.getElementById(
+                "songPlaylist"
+            )
+            .value;
+
+
+        if (!title) {
+
+            alert(
+                "Judul lagu wajib diisi."
+            );
+
+            return;
+        }
+
+
+        if (!artist) {
+
+            alert(
+                "Nama artis wajib diisi."
+            );
+
+            return;
+        }
+
+
+        if (!audioFile) {
+
+            alert(
+                "File audio wajib dipilih."
+            );
+
+            return;
+        }
 
 
         let cover = null;
 
-        if (coverFile) {
+        let audioURL = null;
 
-            cover =
-                await fileToDataURL(coverFile);
 
+        /* =========================
+           UPLOAD FILE
+        ========================= */
+
+        try {
+
+
+            /* =========================
+               COVER
+            ========================= */
+
+            if (coverFile) {
+
+                cover =
+                    await uploadFile(
+                        coverFile,
+                        "covers",
+                        "songs"
+                    );
+
+            }
+
+
+            /* =========================
+               AUDIO
+            ========================= */
+
+            audioURL =
+                await uploadFile(
+                    audioFile,
+                    "music",
+                    "songs"
+                );
+
+
+        } catch (error) {
+
+            console.error(
+                "Gagal upload file:",
+                error
+            );
+
+            alert(
+                "Gagal upload file. Cek Console."
+            );
+
+            return;
         }
 
 
-        const audioURL =
-            URL.createObjectURL(audioFile);
+        /* =========================
+           SAVE SONG
+        ========================= */
+
+        const {
+            data: newSong,
+            error: songError
+        } = await supabaseClient
+            .from("songs")
+            .insert([
+                {
+                    title:
+                        title,
+
+                    artist:
+                        artist,
+
+                    cover:
+                        cover,
+
+                    audio:
+                        audioURL,
+
+                    playlistId:
+                        playlistId,
+
+                    favorite:
+                        false,
+
+                    duration:
+                        ""
+                }
+            ])
+            .select()
+            .single();
 
 
-        const song = {
+        if (songError) {
 
-            id: crypto.randomUUID(),
+            console.error(
+                "Gagal menyimpan lagu ke Supabase:",
+                songError
+            );
 
-            title,
+            alert(
+                "Gagal menyimpan lagu ke Supabase. Cek Console."
+            );
 
-            artist,
-
-            cover,
-
-            audio: audioURL,
-
-            playlistId,
-
-            favorite: false,
-
-            duration: ""
-
-        };
+            return;
+        }
 
 
-        songs.push(song);
+        /* =========================
+           UPDATE LOCAL DATA
+        ========================= */
 
-        saveData();
+        songs.push(
+            newSong
+        );
+
 
         renderRecentSongs();
+
         renderPlaylists();
 
-        closeModal("songModal");
 
-        e.target.reset();
+        closeModal(
+            "songModal"
+        );
 
-    });
+
+        event.target.reset();
+
+
+        console.log(
+            "Lagu berhasil ditambahkan:",
+            newSong
+        );
+
+    }
+);
 
 
 /* =========================
-   FILE READER
+   SUPABASE STORAGE UPLOAD
 ========================= */
 
-function fileToDataURL(file) {
+async function uploadFile(
+    file,
+    bucket,
+    folder = ""
+) {
 
-    return new Promise(resolve => {
+    if (!file)
+        return null;
 
-        const reader =
-            new FileReader();
 
-        reader.onload =
-            () => resolve(reader.result);
+    const extension =
+        file.name
+            .split(".")
+            .pop()
+            .toLowerCase();
 
-        reader.readAsDataURL(file);
 
-    });
+    const fileName =
+        `${crypto.randomUUID()}.${extension}`;
 
+
+    const filePath =
+        folder
+            ? `${folder}/${fileName}`
+            : fileName;
+
+
+    console.log(
+        "Uploading:",
+        bucket,
+        filePath
+    );
+
+
+    const {
+        error
+    } = await supabaseClient
+        .storage
+        .from(bucket)
+        .upload(
+            filePath,
+            file,
+            {
+                cacheControl:
+                    "3600",
+
+                upsert:
+                    false
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            `Gagal upload ke ${bucket}:`,
+            error
+        );
+
+        throw error;
+    }
+
+
+    const {
+        data
+    } =
+        supabaseClient
+            .storage
+            .from(bucket)
+            .getPublicUrl(
+                filePath
+            );
+
+
+    console.log(
+        "File uploaded:",
+        data.publicUrl
+    );
+
+
+    return data.publicUrl;
 }
 
 
@@ -879,52 +1738,89 @@ function openPlaylist(id) {
 
     const playlist =
         playlists.find(
-            item => item.id === id
+            item =>
+                String(item.id) ===
+                String(id)
         );
 
-    if (!playlist) return;
 
-    currentPlaylist = id;
-
-    document.getElementById("homePage")
-        .classList.remove("active");
-
-    document.getElementById("favoritesPage")
-        .classList.remove("active");
-
-    document.getElementById("playlistPage")
-        .classList.add("active");
+    if (!playlist)
+        return;
 
 
-    document.getElementById("playlistTitle")
-        .textContent = playlist.name;
+    currentPlaylist =
+        id;
 
-    document.getElementById("playlistDescription")
+
+    document.getElementById(
+        "homePage"
+    )
+        .classList
+        .remove("active");
+
+
+    document.getElementById(
+        "favoritesPage"
+    )
+        .classList
+        .remove("active");
+
+
+    document.getElementById(
+        "playlistPage"
+    )
+        .classList
+        .add("active");
+
+
+    document.getElementById(
+        "playlistTitle"
+    )
+        .textContent =
+        playlist.name;
+
+
+    document.getElementById(
+        "playlistDescription"
+    )
         .textContent =
         playlist.description ||
         "Your playlist";
 
 
     const cover =
-        document.getElementById("playlistCover");
+        document.getElementById(
+            "playlistCover"
+        );
+
 
     if (playlist.cover) {
 
-        cover.innerHTML =
-            `<img src="${playlist.cover}">`;
+        cover.innerHTML = `
+
+            <img
+                src="${escapeHTML(
+                    playlist.cover
+                )}"
+                alt="Cover"
+            >
+
+        `;
 
     } else {
 
-        cover.innerHTML = "♫";
+        cover.innerHTML =
+            "♫";
 
     }
 
 
     renderSongs(
         getPlaylistSongs(id),
-        document.getElementById("playlistSongs")
+        document.getElementById(
+            "playlistSongs"
+        )
     );
-
 }
 
 
@@ -932,37 +1828,73 @@ function openPlaylist(id) {
    PLAY PLAYLIST
 ========================= */
 
-document.getElementById("playPlaylistBtn")
-    .addEventListener("click", () => {
+document.getElementById(
+    "playPlaylistBtn"
+).addEventListener(
+    "click",
+    () => {
 
-        if (!currentPlaylist) return;
+
+        if (
+            currentPlaylist === null
+        )
+            return;
+
 
         const playlistSongs =
-            getPlaylistSongs(currentPlaylist);
+            getPlaylistSongs(
+                currentPlaylist
+            );
 
-        if (!playlistSongs.length) return;
+
+        if (
+            !playlistSongs.length
+        )
+            return;
+
 
         const firstSong =
             songs.findIndex(
                 song =>
-                    song.id === playlistSongs[0].id
+                    song.id ===
+                    playlistSongs[0].id
             );
 
-        playSong(firstSong);
 
-    });
+        if (
+            firstSong !== -1
+        ) {
+
+            playSong(
+                firstSong
+            );
+
+        }
+
+    }
+);
 
 
 /* =========================
    DELETE PLAYLIST
 ========================= */
 
-document.getElementById("deletePlaylistBtn")
-    .addEventListener("click", () => {
+document.getElementById(
+    "deletePlaylistBtn"
+).addEventListener(
+    "click",
+    async () => {
 
-        if (!currentPlaylist) return;
 
-        if (playlists.length <= 1) {
+        if (
+            currentPlaylist === null
+        )
+            return;
+
+
+        if (
+            playlists.length <= 1
+        ) {
 
             alert(
                 "Minimal harus ada satu playlist."
@@ -971,106 +1903,261 @@ document.getElementById("deletePlaylistBtn")
             return;
         }
 
+
         const playlist =
             playlists.find(
-                item => item.id === currentPlaylist
+                item =>
+                    String(item.id) ===
+                    String(currentPlaylist)
             );
 
-        if (!confirm(
-            `Hapus playlist "${playlist.name}"?`
-        )) return;
 
+        if (!playlist)
+            return;
+
+
+        if (
+            !confirm(
+                `Hapus playlist "${playlist.name}"?`
+            )
+        )
+            return;
+
+
+        /* =========================
+           DELETE SONGS
+        ========================= */
+
+        const {
+            error: songDeleteError
+        } = await supabaseClient
+            .from("songs")
+            .delete()
+            .eq(
+                "playlistId",
+                currentPlaylist
+            );
+
+
+        if (songDeleteError) {
+
+            console.error(
+                "Gagal menghapus songs:",
+                songDeleteError
+            );
+
+            alert(
+                "Gagal menghapus lagu dari playlist."
+            );
+
+            return;
+        }
+
+
+        /* =========================
+           DELETE PLAYLIST
+        ========================= */
+
+        const {
+            error: playlistDeleteError
+        } = await supabaseClient
+            .from("playlists")
+            .delete()
+            .eq(
+                "id",
+                currentPlaylist
+            );
+
+
+        if (playlistDeleteError) {
+
+            console.error(
+                "Gagal menghapus playlist:",
+                playlistDeleteError
+            );
+
+            alert(
+                "Gagal menghapus playlist."
+            );
+
+            return;
+        }
+
+
+        /* =========================
+           UPDATE LOCAL DATA
+        ========================= */
 
         songs =
             songs.filter(
                 song =>
-                    song.playlistId !== currentPlaylist
+                    String(
+                        song.playlistId
+                    ) !==
+                    String(
+                        currentPlaylist
+                    )
             );
 
 
         playlists =
             playlists.filter(
-                item =>
-                    item.id !== currentPlaylist
+                playlist =>
+                    String(
+                        playlist.id
+                    ) !==
+                    String(
+                        currentPlaylist
+                    )
             );
 
 
-        saveData();
+        currentPlaylist =
+            null;
+
 
         renderPlaylists();
 
-        showPage("home");
+        renderRecentSongs();
 
-    });
+
+        showPage(
+            "home"
+        );
+
+
+        console.log(
+            "Playlist berhasil dihapus."
+        );
+
+    }
+);
 
 
 /* =========================
-   BACK
+   BACK HOME
 ========================= */
 
-document.getElementById("backHome")
-    .addEventListener("click", () => {
+document.getElementById(
+    "backHome"
+).addEventListener(
+    "click",
+    () => {
 
-        showPage("home");
+        showPage(
+            "home"
+        );
 
-    });
+    }
+);
 
 
 /* =========================
    NAVIGATION
 ========================= */
 
-document.querySelectorAll(".nav-item")
-    .forEach(button => {
+document.querySelectorAll(
+    ".nav-item"
+).forEach(
+    button => {
 
-        button.addEventListener("click", () => {
 
-            const page =
-                button.dataset.page;
+        button.addEventListener(
+            "click",
+            () => {
 
-            showPage(page);
 
-        });
+                const page =
+                    button.dataset.page;
 
-    });
 
+                showPage(
+                    page
+                );
+
+            }
+        );
+
+    }
+);
+
+
+/* =========================
+   SHOW PAGE
+========================= */
 
 function showPage(page) {
 
-    document.querySelectorAll(".page")
-        .forEach(p =>
-            p.classList.remove("active")
-        );
+
+    document.querySelectorAll(
+        ".page"
+    ).forEach(
+        pageElement => {
+
+            pageElement
+                .classList
+                .remove("active");
+
+        }
+    );
 
 
-    if (page === "home") {
+    if (
+        page === "home"
+    ) {
 
-        document.getElementById("homePage")
-            .classList.add("active");
+        document.getElementById(
+            "homePage"
+        )
+            .classList
+            .add("active");
 
     }
 
 
-    if (page === "favorites") {
+    if (
+        page === "favorites"
+    ) {
 
-        document.getElementById("favoritesPage")
-            .classList.add("active");
+        document.getElementById(
+            "favoritesPage"
+        )
+            .classList
+            .add("active");
+
 
         renderFavorites();
 
     }
 
 
-    document.querySelectorAll(".nav-item")
-        .forEach(button => {
+    if (
+        page === "playlist"
+    ) {
+
+        document.getElementById(
+            "playlistPage"
+        )
+            .classList
+            .add("active");
+
+    }
+
+
+    document.querySelectorAll(
+        ".nav-item"
+    ).forEach(
+        button => {
+
 
             button.classList.toggle(
                 "active",
-                button.dataset.page === page
+                button.dataset.page ===
+                    page
             );
 
-        });
-
+        }
+    );
 }
 
 
@@ -1078,75 +2165,142 @@ function showPage(page) {
    SEARCH
 ========================= */
 
-document.getElementById("searchInput")
-    .addEventListener("input", e => {
+document.getElementById(
+    "searchInput"
+).addEventListener(
+    "input",
+    event => {
+
 
         const query =
-            e.target.value.toLowerCase().trim();
+            event.target.value
+                .toLowerCase()
+                .trim();
+
 
         const results =
-            songs.filter(song =>
+            songs.filter(
+                song => {
 
-                song.title
-                    .toLowerCase()
-                    .includes(query)
 
-                ||
+                    const title =
+                        String(
+                            song.title ||
+                            ""
+                        )
+                        .toLowerCase();
 
-                song.artist
-                    .toLowerCase()
-                    .includes(query)
 
+                    const artist =
+                        String(
+                            song.artist ||
+                            ""
+                        )
+                        .toLowerCase();
+
+
+                    return (
+                        title.includes(
+                            query
+                        ) ||
+                        artist.includes(
+                            query
+                        )
+                    );
+
+                }
             );
+
 
         renderSongs(
             results,
-            document.getElementById("recentSongs")
+            document.getElementById(
+                "recentSongs"
+            )
         );
 
-    });
+    }
+);
 
 
 /* =========================
-   MODAL
+   MODAL CLOSE BUTTON
 ========================= */
 
-document.querySelectorAll(".close-modal")
-    .forEach(button => {
-
-        button.addEventListener("click", () => {
-
-            closeModal(
-                button.dataset.close
-            );
-
-        });
-
-    });
+document.querySelectorAll(
+    ".close-modal"
+).forEach(
+    button => {
 
 
-document.querySelectorAll(".modal")
-    .forEach(modal => {
+        button.addEventListener(
+            "click",
+            () => {
 
-        modal.addEventListener("click", e => {
 
-            if (e.target === modal) {
-
-                modal.classList.remove("show");
+                closeModal(
+                    button.dataset.close
+                );
 
             }
+        );
 
-        });
+    }
+);
 
-    });
 
+/* =========================
+   MODAL BACKDROP
+========================= */
+
+document.querySelectorAll(
+    ".modal"
+).forEach(
+    modal => {
+
+
+        modal.addEventListener(
+            "click",
+            event => {
+
+
+                if (
+                    event.target ===
+                    modal
+                ) {
+
+                    modal.classList.remove(
+                        "show"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
+/* =========================
+   CLOSE MODAL
+========================= */
 
 function closeModal(id) {
 
-    document
-        .getElementById(id)
-        .classList.remove("show");
+    const modal =
+        document.getElementById(
+            id
+        );
 
+
+    if (!modal)
+        return;
+
+
+    modal.classList.remove(
+        "show"
+    );
 }
 
 
@@ -1154,56 +2308,122 @@ function closeModal(id) {
    MOBILE MENU
 ========================= */
 
-const sidebar = document.querySelector(".sidebar");
-const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-
-mobileMenuBtn.addEventListener("click", (e) => {
-
-    e.stopPropagation();
-
-    sidebar.classList.toggle("open");
-
-});
+const sidebar =
+    document.querySelector(
+        ".sidebar"
+    );
 
 
-/* Klik menu navigasi → tutup sidebar */
-
-document.querySelectorAll(".nav-item").forEach(button => {
-
-    button.addEventListener("click", () => {
-
-        sidebar.classList.remove("open");
-
-    });
-
-});
+const mobileMenuBtn =
+    document.getElementById(
+        "mobileMenuBtn"
+    );
 
 
-/* Klik playlist → tutup sidebar */
-
-document.getElementById("playlistList")
-    .addEventListener("click", () => {
-
-        sidebar.classList.remove("open");
-
-    });
+if (
+    mobileMenuBtn &&
+    sidebar
+) {
 
 
-/* Klik area di luar sidebar → tutup */
+    mobileMenuBtn.addEventListener(
+        "click",
+        event => {
 
-document.addEventListener("click", (e) => {
 
-    if (
-        sidebar.classList.contains("open") &&
-        !sidebar.contains(e.target) &&
-        !mobileMenuBtn.contains(e.target)
-    ) {
+            event.stopPropagation();
 
-        sidebar.classList.remove("open");
+
+            sidebar.classList.toggle(
+                "open"
+            );
+
+        }
+    );
+
+
+    /* =========================
+       NAV CLICK
+    ========================= */
+
+    document.querySelectorAll(
+        ".nav-item"
+    ).forEach(
+        button => {
+
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    sidebar.classList.remove(
+                        "open"
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+    /* =========================
+       PLAYLIST CLICK
+    ========================= */
+
+    const playlistList =
+        document.getElementById(
+            "playlistList"
+        );
+
+
+    if (playlistList) {
+
+        playlistList.addEventListener(
+            "click",
+            () => {
+
+                sidebar.classList.remove(
+                    "open"
+                );
+
+            }
+        );
 
     }
 
-});
+
+    /* =========================
+       OUTSIDE CLICK
+    ========================= */
+
+    document.addEventListener(
+        "click",
+        event => {
+
+
+            if (
+                sidebar.classList.contains(
+                    "open"
+                ) &&
+                !sidebar.contains(
+                    event.target
+                ) &&
+                !mobileMenuBtn.contains(
+                    event.target
+                )
+            ) {
+
+                sidebar.classList.remove(
+                    "open"
+                );
+
+            }
+
+        }
+    );
+
+}
 
 
 /* =========================
@@ -1212,20 +2432,81 @@ document.addEventListener("click", (e) => {
 
 function escapeHTML(text) {
 
-    return String(text)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
+    return String(
+        text ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 }
 
 
 /* =========================
-   INITIAL RENDER
+   AUDIO ERROR
 ========================= */
 
-loadData();
+audio.addEventListener(
+    "error",
+    () => {
+
+        console.error(
+            "Audio gagal dimuat:",
+            audio.src
+        );
+
+    }
+);
+
+
+/* =========================
+   AUDIO PLAY
+========================= */
+
+audio.addEventListener(
+    "play",
+    () => {
+
+        updatePlayButton();
+
+    }
+);
+
+
+/* =========================
+   AUDIO PAUSE
+========================= */
+
+audio.addEventListener(
+    "pause",
+    () => {
+
+        updatePlayButton();
+
+    }
+);
+
+
+/* =========================
+   INITIAL
+========================= */
 
 audio.volume = 0.8;
+
+loadData();
