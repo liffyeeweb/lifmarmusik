@@ -283,7 +283,7 @@ function renderPlaylists() {
 
             coverHTML =
                 `<img src="${escapeHTML(
-                    playlist.cover
+                    playlist.cover_url
                 )}" alt="Cover">`;
 
         }
