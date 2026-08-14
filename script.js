@@ -1560,36 +1560,23 @@ document.getElementById(
         ========================= */
 
         const {
-            data: newSong,
-            error: songError
-        } = await supabaseClient
-            .from("songs")
-            .insert([
-                {
-                    title:
-                        title,
-
-                    artist:
-                        artist,
-
-                    cover:
-                        cover,
-
-                    audio:
-                        audioURL,
-
-                    playlistId:
-                        playlistId,
-
-                    favorite:
-                        false,
-
-                    duration:
-                        ""
-                }
-            ])
-            .select()
-            .single();
+    data: newSong,
+    error: songError
+} = await supabaseClient
+    .from("songs")
+    .insert([
+        {
+            title: title,
+            artist: artist,
+            cover_url: cover,
+            audio_url: audioURL,
+            playlist_id: playlistId,
+            favorite: false,
+            duration: ""
+        }
+    ])
+    .select()
+    .single();
 
 
         if (songError) {
