@@ -3,7 +3,7 @@ const audio = document.getElementById("audioPlayer");
 console.log("Lifmar Musik V2 — Supabase connected");
 
 const SUPABASE_URL = "https://ibsobqdicrjwpqwinsjk.supabase.co";
-const SUPABASE_KEY = "sb_publishable_KEY_KAMU";
+const SUPABASE_KEY = "sb_publishable_wnizDCQ62Ec8KOrzswxEYA_RD2bT2H_";
 
 const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
