@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MyPlaylist</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            <div class="brand-icon">♫</div>
+            <span>MyPlaylist</span>
+        </div>
+
+        <nav class="navigation">
+
+            <button class="nav-item active" data-page="home">
+                <span>⌂</span>
+                Home
+            </button>
+
+            <button class="nav-item" data-page="favorites">
+                <span>♥</span>
+                Favorites
+            </button>
+
+        </nav>
+
+        <div class="playlist-section">
+
+            <div class="playlist-header">
+                <span>Your Playlists</span>
+
+                <button id="addPlaylistBtn" class="small-btn">
+                    +
+                </button>
+            </div>
+
+            <div id="playlistList" class="playlist-list"></div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <header class="topbar">
+
+            <button id="mobileMenuBtn" class="mobile-menu">
+                ☰
+            </button>
+
+            <div class="search">
+
+                <span>⌕</span>
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search songs, artists..."
+                >
+
+            </div>
+
+            <button id="addSongBtn" class="add-song-btn">
+                + Add Song
+            </button>
+
+        </header>
+
+
+        <!-- HOME -->
+        <section id="homePage" class="page active">
+
+            <div class="hero">
+
+                <div>
+
+                    <p class="eyebrow">
+                        YOUR MUSIC
+                    </p>
+
+                    <h1>
+                        Your music.<br>
+                        Your playlist.
+                    </h1>
+
+                    <p class="hero-description">
+                        Simpan dan nikmati musik favoritmu
+                        dalam satu tempat.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <section class="content-section">
+
+                <div class="section-title">
+                    <h2>Your Playlists</h2>
+
+                    <button id="createPlaylistBtn">
+                        + Create Playlist
+                    </button>
+                </div>
+
+                <div id="playlistCards" class="playlist-grid"></div>
+
+            </section>
+
+
+            <section class="content-section">
+
+                <div class="section-title">
+                    <h2>Recently Added</h2>
+                </div>
+
+                <div id="recentSongs" class="song-list"></div>
+
+            </section>
+
+        </section>
+
+
+        <!-- FAVORITES -->
+        <section id="favoritesPage" class="page">
+
+            <div class="page-heading">
+
+                <p class="eyebrow">
+                    YOUR COLLECTION
+                </p>
+
+                <h1>Favorites</h1>
+
+                <p>
+                    Lagu yang kamu tandai sebagai favorit.
+                </p>
+
+            </div>
+
+            <div id="favoriteSongs" class="song-list"></div>
+
+        </section>
+
+
+        <!-- PLAYLIST PAGE -->
+        <section id="playlistPage" class="page">
+
+            <button id="backHome" class="back-btn">
+                ← Back
+            </button>
+
+            <div class="playlist-detail">
+
+                <div id="playlistCover" class="playlist-large-cover">
+                    ♫
+                </div>
+
+                <div class="playlist-info">
+
+                    <p class="eyebrow">
+                        PLAYLIST
+                    </p>
+
+                    <h1 id="playlistTitle">
+                        Playlist
+                    </h1>
+
+                    <p id="playlistDescription">
+                        Your playlist
+                    </p>
+
+                    <div class="playlist-actions">
+
+                        <button id="playPlaylistBtn" class="primary-btn">
+                            ▶ Play
+                        </button>
+
+                        <button id="deletePlaylistBtn" class="secondary-btn">
+                            Delete
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div id="playlistSongs" class="song-list"></div>
+
+        </section>
+
+    </main>
+
+
+    <!-- PLAYER -->
+    <footer class="player">
+
+        <div class="now-playing">
+
+            <div id="currentCover" class="current-cover">
+                ♫
+            </div>
+
+            <div class="current-info">
+
+                <strong id="currentTitle">
+                    No song playing
+                </strong>
+
+                <span id="currentArtist">
+                    Select a song
+                </span>
+
+            </div>
+
+            <button id="favoriteCurrent" class="favorite-btn">
+                ♡
+            </button>
+
+        </div>
+
+
+        <div class="player-center">
+
+            <div class="player-buttons">
+
+                <button id="shuffleBtn">
+                    🔀
+                </button>
+
+                <button id="previousBtn">
+                    ⏮
+                </button>
+
+                <button id="playBtn" class="play-button">
+                    ▶
+                </button>
+
+                <button id="nextBtn">
+                    ⏭
+                </button>
+
+                <button id="repeatBtn">
+                    🔁
+                </button>
+
+            </div>
+
+            <div class="progress-container">
+
+                <span id="currentTime">
+                    0:00
+                </span>
+
+                <input
+                    type="range"
+                    id="progressBar"
+                    min="0"
+                    max="100"
+                    value="0"
+                >
+
+                <span id="duration">
+                    0:00
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="volume">
+
+            <span>🔊</span>
+
+            <input
+                type="range"
+                id="volumeBar"
+                min="0"
+                max="1"
+                step="0.01"
+                value="0.8"
+            >
+
+        </div>
+
+    </footer>
+
+</div>
+
+
+<!-- ADD SONG MODAL -->
+
+<div id="songModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>Add Song</h2>
+
+            <button class="close-modal" data-close="songModal">
+                ×
+            </button>
+
+        </div>
+
+        <form id="songForm">
+
+            <label>
+                Song Title
+
+                <input
+                    id="songTitle"
+                    type="text"
+                    placeholder="Contoh: Golden Hour"
+                    required
+                >
+
+            </label>
+
+
+            <label>
+                Artist
+
+                <input
+                    id="songArtist"
+                    type="text"
+                    placeholder="Nama artist"
+                    required
+                >
+
+            </label>
+
+
+            <label>
+                Cover
+
+                <input
+                    id="songCover"
+                    type="file"
+                    accept="image/*"
+                >
+
+            </label>
+
+
+            <label>
+                Audio
+
+                <input
+                    id="songAudio"
+                    type="file"
+                    accept="audio/*"
+                    required
+                >
+
+            </label>
+
+
+            <label>
+                Playlist
+
+                <select id="songPlaylist"></select>
+
+            </label>
+
+
+            <button class="submit-btn" type="submit">
+                Add Song
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- CREATE PLAYLIST MODAL -->
+
+<div id="playlistModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>Create Playlist</h2>
+
+            <button class="close-modal" data-close="playlistModal">
+                ×
+            </button>
+
+        </div>
+
+        <form id="playlistForm">
+
+            <label>
+                Playlist Name
+
+                <input
+                    id="playlistName"
+                    type="text"
+                    placeholder="Contoh: Chill Night"
+                    required
+                >
+
+            </label>
+
+
+            <label>
+                Description
+
+                <textarea
+                    id="playlistDescriptionInput"
+                    placeholder="Playlist untuk..."
+                ></textarea>
+
+            </label>
+
+
+            <label>
+                Cover
+
+                <input
+                    id="playlistCoverInput"
+                    type="file"
+                    accept="image/*"
+                >
+
+            </label>
+
+
+            <button class="submit-btn" type="submit">
+                Create Playlist
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<audio id="audioPlayer"></audio>
+
+<script src="script.js"></script>
+
+</body>
+</html>
