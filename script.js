@@ -10,8 +10,8 @@ const supabaseClient = window.supabase.createClient(
     SUPABASE_KEY
 );
 
-let songs = JSON.parse(localStorage.getItem("mySongs")) || [];
-let playlists = JSON.parse(localStorage.getItem("myPlaylists")) || [];
+let songs = [];
+let playlists = [];
 
 let currentIndex = -1;
 let currentPlaylist = null;
@@ -19,39 +19,87 @@ let currentPlaylist = null;
 let shuffle = false;
 let repeat = false;
 
-
 /* =========================
-   INITIAL DATA
+   LOAD DATA FROM SUPABASE
 ========================= */
 
-if (playlists.length === 0) {
+async function loadData() {
 
-    playlists.push({
-        id: crypto.randomUUID(),
-        name: "My Favorites",
-        description: "Your favorite songs",
-        cover: null
-    });
+    try {
+        // Ambil playlists
+        const { data: playlistData, error: playlistError } =
+            await supabaseClient
+                .from("playlists")
+                .select("*")
+                .order("id", { ascending: true });
 
-    saveData();
-}
+        if (playlistError) {
+            console.error(
+                "Gagal mengambil playlists:",
+                playlistError
+            );
+            return;
+        }
 
 
-/* =========================
-   STORAGE
-========================= */
+        // Ambil songs
+        const { data: songData, error: songError } =
+            await supabaseClient
+                .from("songs")
+                .select("*")
+                .order("id", { ascending: true });
 
-function saveData() {
+        if (songError) {
+            console.error(
+                "Gagal mengambil songs:",
+                songError
+            );
+            return;
+        }
 
-    localStorage.setItem(
-        "mySongs",
-        JSON.stringify(songs)
-    );
+        playlists = playlistData || [];
+        songs = songData || [];
 
-    localStorage.setItem(
-        "myPlaylists",
-        JSON.stringify(playlists)
-    );
+        console.log("Playlists loaded:", playlists);
+        console.log("Songs loaded:", songs);
+
+
+        // Kalau belum ada playlist,
+        // buat My Favorites
+        if (playlists.length === 0) {
+
+            const { data: newPlaylist, error } =
+                await supabaseClient
+                    .from("playlists")
+                    .insert([
+                        {
+                            name: "My Favorites",
+                            description: "Your favorite songs",
+                            cover: null
+                        }
+                    ])
+                    .select()
+                    .single();
+            if (error) {
+                console.error(
+                    "Gagal membuat playlist:",
+                    error
+                );
+            } else {
+                playlists.push(newPlaylist);
+            }
+        }
+
+
+        renderPlaylists();
+        renderRecentSongs();
+
+    } catch (error) {
+        console.error(
+            "Supabase error:",
+            error
+        );
+    }
 }
 
 
@@ -1148,8 +1196,6 @@ function escapeHTML(text) {
    INITIAL RENDER
 ========================= */
 
-renderPlaylists();
-
-renderRecentSongs();
+loadData();
 
 audio.volume = 0.8;
