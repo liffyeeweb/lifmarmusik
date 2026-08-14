@@ -129,7 +129,8 @@ async function loadData() {
                         name: "My Favorites",
                         description:
                             "Your favorite songs",
-                        cover: null
+                        cover_url: null,
+                        is_public: true
                     }
                 ])
                 .select()
@@ -278,7 +279,7 @@ function renderPlaylists() {
         let coverHTML = "♫";
 
 
-        if (playlist.cover) {
+        if (playlist.cover_url) {
 
             coverHTML =
                 `<img src="${escapeHTML(
@@ -371,10 +372,10 @@ function getPlaylistSongs(
 ) {
 
     return songs.filter(
-        song =>
-            String(song.playlistId) ===
-            String(playlistId)
-    );
+    song =>
+        String(song.playlist_id) ===
+        String(playlistId)
+);
 }
 
 
@@ -448,12 +449,12 @@ function renderSongs(
                 <div class="song-main">
 
                     ${
-                        song.cover
+                        song.cover_url
                         ? `
                             <img
                                 class="song-cover"
                                 src="${escapeHTML(
-                                    song.cover
+                                    song.cover_url
                                 )}"
                                 alt="Cover"
                             >
@@ -713,18 +714,15 @@ function playSong(index) {
         songs[index];
 
 
-    if (!song.audio) {
+    if (!song.audio_url) {
+    alert(
+        "File audio lagu ini belum tersedia."
+    );
+    console.error("Audio URL kosong:", song);
+    return;
+}
 
-        alert(
-            "File audio lagu ini belum tersedia."
-        );
-
-        return;
-    }
-
-
-    audio.src =
-        song.audio;
+audio.src = song.audio_url;
 
 
     audio.load();
@@ -1139,7 +1137,7 @@ function updateCurrentCover() {
 
     if (
         !song ||
-        !song.cover
+        !song.cover_url
     ) {
 
         container.innerHTML =
@@ -1154,7 +1152,7 @@ function updateCurrentCover() {
 
         <img
             src="${escapeHTML(
-                song.cover
+                song.cover_url
             )}"
             alt="Cover"
         >
@@ -1916,7 +1914,7 @@ document.getElementById(
             .from("songs")
             .delete()
             .eq(
-                "playlistId",
+                "playlist_id",
                 currentPlaylist
             );
 
@@ -1974,7 +1972,7 @@ document.getElementById(
             songs.filter(
                 song =>
                     String(
-                        song.playlistId
+                        song.playlist_id
                     ) !==
                     String(
                         currentPlaylist
