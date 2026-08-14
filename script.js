@@ -1,6 +1,14 @@
 const audio = document.getElementById("audioPlayer");
 
-console.log("PlaylistKita V2 loaded");
+console.log("Lifmar Musik V2 — Supabase connected");
+
+const SUPABASE_URL = "https://ibsobqdicrjwpqwinsjk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_KEY_KAMU";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
 let songs = JSON.parse(localStorage.getItem("mySongs")) || [];
 let playlists = JSON.parse(localStorage.getItem("myPlaylists")) || [];
