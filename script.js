@@ -703,58 +703,67 @@ async function toggleFavorite(id) {
 
 function playSong(index) {
 
-    if (!songs[index]) return;
+    if (!songs[index]) {
+        console.error("Song tidak ditemukan:", index);
+        return;
+    }
 
+    currentIndex = index;
 
-    currentIndex =
-        index;
+    const song = songs[index];
 
-
-    const song =
-        songs[index];
-
+    console.log("=== DEBUG SONG ===");
+    console.log("Song:", song);
+    console.log("ID:", song.id);
+    console.log("Title:", song.title);
+    console.log("Audio URL:", song.audio_url);
+    console.log("Cover URL:", song.cover_url);
+    console.log("==================");
 
     if (!song.audio_url) {
-    alert(
-        "File audio lagu ini belum tersedia."
-    );
-    console.error("Audio URL kosong:", song);
-    return;
-}
 
-audio.src = song.audio_url;
+        alert("Audio URL kosong. Cek Console.");
 
+        return;
+    }
+
+    audio.src = song.audio_url;
+
+    console.log("Memutar:", audio.src);
 
     audio.load();
 
-
     audio.play()
+        .then(() => {
+            console.log("Audio berhasil diputar");
+        })
         .catch(error => {
 
             console.error(
-                "Gagal memutar lagu:",
+                "Gagal memutar audio:",
                 error
             );
 
         });
 
+    const titleElement =
+        document.getElementById("currentTitle");
 
-    document.getElementById(
-        "currentTitle"
-    ).textContent =
-        song.title || "Unknown";
+    const artistElement =
+        document.getElementById("currentArtist");
 
+    if (titleElement) {
+        titleElement.textContent =
+            song.title || "Unknown";
+    }
 
-    document.getElementById(
-        "currentArtist"
-    ).textContent =
-        song.artist || "Unknown";
-
+    if (artistElement) {
+        artistElement.textContent =
+            song.artist || "Unknown";
+    }
 
     updateCurrentCover();
-
     updatePlayButton();
-
     updateFavoriteButton();
 }
 
