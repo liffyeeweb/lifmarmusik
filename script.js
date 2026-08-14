@@ -665,20 +665,17 @@ function openPlaylistModal() {
 
 }
 
-
 document.getElementById("addPlaylistBtn")
     .addEventListener(
         "click",
         openPlaylistModal
     );
 
-
 document.getElementById("createPlaylistBtn")
     .addEventListener(
         "click",
         openPlaylistModal
     );
-
 
 document.getElementById("playlistForm")
     .addEventListener("submit", async e => {
@@ -687,45 +684,78 @@ document.getElementById("playlistForm")
 
         const name =
             document.getElementById("playlistName")
-                .value;
+                .value
+                .trim();
 
         const description =
             document.getElementById(
                 "playlistDescriptionInput"
-            ).value;
+            ).value.trim();
 
         const coverFile =
             document.getElementById(
                 "playlistCoverInput"
             ).files[0];
 
-        let cover = null;
-
-        if (coverFile) {
-            cover =
-                await fileToDataURL(coverFile);
+        if (!name) {
+            alert("Nama playlist wajib diisi.");
+            return;
         }
 
-        playlists.push({
+        let cover = null;
 
-            id: crypto.randomUUID(),
+        // Sementara cover masih diproses nanti
+        // setelah Storage kita hubungkan.
+        if (coverFile) {
 
-            name,
+            cover =
+                await fileToDataURL(coverFile);
 
-            description,
+        }
 
-            cover
+        const { data, error } =
+            await supabaseClient
+                .from("playlists")
+                .insert([
+                    {
+                        name: name,
+                        description: description,
+                        cover: cover
+                    }
+                ])
+                .select()
+                .single();
 
-        });
+        if (error) {
 
-        saveData();
+            console.error(
+                "Gagal membuat playlist:",
+                error
+            );
 
+            alert(
+                "Gagal membuat playlist. Cek Console."
+            );
+
+            return;
+        }
+
+        // Tambahkan hasil dari Supabase
+        playlists.push(data);
+
+        // Render ulang
         renderPlaylists();
 
+        // Tutup modal
         closeModal("playlistModal");
 
+        // Reset form
         e.target.reset();
 
+        console.log(
+            "Playlist berhasil dibuat:",
+            data
+        );
     });
 
 
